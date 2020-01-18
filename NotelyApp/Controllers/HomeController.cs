@@ -47,24 +47,31 @@ namespace NotelyApp.Controllers
         [HttpPost]
         public IActionResult NoteEditor(NoteModel noteModel)
         {
-            var date = DateTime.Now;
-
-            if(noteModel != null && noteModel.Id == Guid.Empty)
+            if (ModelState.IsValid)
             {
-                noteModel.Id = Guid.NewGuid();
-                noteModel.CreatedDate = date;
-                noteModel.LastModified = date;
-                _noteRepository.SaveNote(noteModel);
+                var date = DateTime.Now;
+
+                if (noteModel != null && noteModel.Id == Guid.Empty)
+                {
+                    noteModel.Id = Guid.NewGuid();
+                    noteModel.CreatedDate = date;
+                    noteModel.LastModified = date;
+                    _noteRepository.SaveNote(noteModel);
+                }
+                else
+                {
+                    var note = _noteRepository.FindNoteById(noteModel.Id);
+                    note.LastModified = date;
+                    note.Subject = noteModel.Subject;
+                    note.Detail = noteModel.Detail;
+                }
+
+                return RedirectToAction("Index"); 
             }
             else
             {
-                var note = _noteRepository.FindNoteById(noteModel.Id);
-                note.LastModified = date;
-                note.Subject = noteModel.Subject;
-                note.Detail = noteModel.Detail;
+                return View();
             }
-
-            return RedirectToAction("Index");
         }
 
         public IActionResult DeleteNote(Guid id)
